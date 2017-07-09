@@ -5,8 +5,4 @@
     <RootNamespace>Jambox.Web</RootNamespace>
   </PropertyGroup>
 
-  <ItemGroup>
-    <None Include="Http\HttpListener.cs" />
-  </ItemGroup>
-
 </Project>
