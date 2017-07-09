@@ -8,7 +8,7 @@ namespace WebTestProgram
     {
         static void Main(string[] args)
         {
-            var server = Server.New(caseInsensitive: true)
+            var server = Server.New(IPAddress.Any, 80, caseInsensitive: true)
                 .GET(@"/(\d+)\/([^\/]+)", rq =>
                 {
 

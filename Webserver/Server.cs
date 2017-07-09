@@ -3,22 +3,23 @@ using System.Net.Http;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using System.Collections.Immutable;
-
-using RequestDict = System.Collections.Immutable.ImmutableSortedDictionary<System.Text.RegularExpressions.Regex, System.Action<Jambox.Web.Request>>;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading.Tasks;
 using System.IO;
+
+using RequestList = System.Collections.Immutable.ImmutableList<(System.Text.RegularExpressions.Regex, System.Action<Jambox.Web.Request>)>;
+
 
 namespace Jambox.Web
 {
     public partial class Server
     {
         //Routes
-        private RequestDict getRequestMap;
-        private RequestDict postRequestMap;
-        private RequestDict putRequestMap;
-        private RequestDict deleteMapping;
+        private RequestList getRequestMap;
+        private RequestList postRequestMap;
+        private RequestList putRequestMap;
+        private RequestList deleteMapping;
 
         private TcpListener tcp;
         private Server()
@@ -27,7 +28,7 @@ namespace Jambox.Web
 
         public static ServerBuilder New(IPAddress ip, int port, bool caseInsensitive = false)
         {
-            return new ServerBuilder(caseInsensitive ? RegexOptions.IgnoreCase : RegexOptions.None);
+            return new ServerBuilder(ip, port, caseInsensitive ? RegexOptions.IgnoreCase : RegexOptions.None);
         }
         public void Run(Action<Exception> errorHandler = null)
         {
