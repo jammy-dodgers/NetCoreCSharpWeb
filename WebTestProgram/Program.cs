@@ -8,14 +8,19 @@ namespace WebTestProgram
     {
         static void Main(string[] args)
         {
-            var server = Server.New(IPAddress.Any, 5000, caseInsensitive: true)
-                .GET(@"/.+", rq =>
+            var server = Server.New(ip: IPAddress.Any, port: 5000, caseInsensitive: true)
+                .GET(@"/(.+)?", rq =>
                 {
-                    rq.Response.Append("Hello World!\n");
-                    rq.Response.Append($"");
+                    Console.WriteLine($"GET from {rq.Header.UserAgent} at {rq.UserIP}");
+                    rq.Response.Append($"Hello {rq.UserIP}!\n");
                     rq.Send();
                 }).Build();
-            server.Run((ex) => Console.WriteLine(ex.Message));
+            server.Run();
+        }
+        static void HandleException(Exception ex)
+        {
+            if (System.Diagnostics.Debugger.IsAttached)
+                System.Diagnostics.Debugger.Break();
         }
     }
 }

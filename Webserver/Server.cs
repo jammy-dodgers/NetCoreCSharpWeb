@@ -78,23 +78,31 @@ namespace Jambox.Web
                     switch (header.Method) {
                     case HttpRequestMethod.GET:
                     {
-                        (regex, action) = getRequestMap.First(x => x.Item1.IsMatch(header.RequestURI));
+                        (regex, action) = getRequestMap.FirstOrDefault(x => x.Item1.IsMatch(header.RequestURI));
                         break;
                     }
                     case HttpRequestMethod.POST:
                     {
-                        (regex, action) = postRequestMap.First(x => x.Item1.IsMatch(header.RequestURI));
+                        (regex, action) = postRequestMap.FirstOrDefault(x => x.Item1.IsMatch(header.RequestURI));
                         break;
                     }
                     }
                     if (action == null)
                         throw new HttpRequestException("Could not find suitable URL to route");
-                    action(new Request() { Header = header, responseStream = cwriter, Captures = regex.Match(header.RequestURI).Captures });
+                    action(new Request() {
+                        Header = header,
+                        responseStream = cwriter,
+                        Captures = regex.Match(header.RequestURI).Captures,
+                        UserIP = ((IPEndPoint)client.Client.RemoteEndPoint).Address
+                    });
+                    cwriter.Flush();
+                    client.GetStream().Dispose();
                     client.Dispose();
                 }
                 catch (Exception ex)
                 {
                     cwriter.Write("An error has occured!");
+                    cwriter.Flush();
                     client.Dispose();
                     errorHandler(ex);
                 }
