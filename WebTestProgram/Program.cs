@@ -16,7 +16,7 @@ namespace WebTestProgram
                 .GET("/", rq =>
                 {
                 }).Build();
-            server.Run(IPAddress.Any, 80);
+            server.RunAsync(IPAddress.Any, 80);
         }
     }
 }

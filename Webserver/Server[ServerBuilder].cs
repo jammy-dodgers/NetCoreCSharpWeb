@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Net;
+using System.Net.Sockets;
 using System.Text;
 using System.Text.RegularExpressions;
 
@@ -16,6 +18,8 @@ namespace Jambox.Web
             RequestDictBuilder putRq;
             RequestDictBuilder postRq;
             RequestDictBuilder delRq;
+            IPAddress ip;
+            int port;
             RegexOptions caseSensitive;
             public ServerBuilder(RegexOptions caseSensitivity)
             {
@@ -76,6 +80,7 @@ namespace Jambox.Web
                 ws.postRequestMap = postRq.ToImmutable();
                 ws.putRequestMap = putRq.ToImmutable();
                 ws.deleteMapping = delRq.ToImmutable();
+                ws.tcp = new TcpListener(ip, port);
                 return ws;
             }
         }

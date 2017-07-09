@@ -7,6 +7,8 @@ using System.Collections.Immutable;
 using RequestDict = System.Collections.Immutable.ImmutableSortedDictionary<System.Text.RegularExpressions.Regex, System.Action<Jambox.Web.Request>>;
 using System.Net;
 using System.Net.Sockets;
+using System.Threading.Tasks;
+using System.IO;
 
 namespace Jambox.Web
 {
@@ -21,22 +23,31 @@ namespace Jambox.Web
         private TcpListener tcp;
         private Server()
         {
-            tcp = new TcpListener(addr, port);
         }
 
-        public static ServerBuilder New(bool caseInsensitive = false)
+        public static ServerBuilder New(IPAddress ip, int port, bool caseInsensitive = false)
         {
             return new ServerBuilder(caseInsensitive ? RegexOptions.IgnoreCase : RegexOptions.None);
         }
-
-        public void Run(IPAddress ip, int port)
+        public void Run(Action<Exception> errorHandler = null)
         {
-            Http.HttpListener listener = new Http.HttpListener(ip, port);
-            var client = await tcp.AcceptTcpClientAsync();
+            while (true)
+            {
+                var task = tcp.AcceptTcpClientAsync();
+                var client = task.GetAwaiter().GetResult();
+
+#pragma warning disable CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
+                RunAsync(client, errorHandler);
+#pragma warning restore CS4014
+            }
+        }
+        public async Task RunAsync(TcpClient client, Action<Exception> errorHandler)
+        {
             using (var creader = new StreamReader(client.GetStream()))
             using (var cwriter = new StreamWriter(client.GetStream()))
             {
-
+                var requestLine = await creader.ReadLineAsync();
+                var requestLineS = requestLine.Split(' ');
             }
             client.Dispose();
         }
