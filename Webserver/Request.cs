@@ -13,12 +13,11 @@ namespace Jambox.Web
         }
 
         public StringBuilder Response { get; private set; }
-
+        public Http.HttpRequestHeader Header { get; private set; }
         private TcpClient respClient;
 
         public void Send()
         {
-
         }
     }
 }
