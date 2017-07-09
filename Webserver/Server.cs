@@ -5,6 +5,8 @@ using System.Net;
 using System.Net.Sockets;
 using System.Threading.Tasks;
 using System.IO;
+using System.Reflection;
+using System.Linq;
 using Jambox.Web.Http;
 using RequestList = System.Collections.Immutable.ImmutableList<(System.Text.RegularExpressions.Regex, System.Action<Jambox.Web.Request>)>;
 
@@ -42,10 +44,10 @@ namespace Jambox.Web
         }
         public async Task RunAsync(TcpClient client, Action<Exception> errorHandler)
         {
-            try
+            using (var creader = new StreamReader(client.GetStream()))
+            using (var cwriter = new StreamWriter(client.GetStream()))
             {
-                using (var creader = new StreamReader(client.GetStream()))
-                using (var cwriter = new StreamWriter(client.GetStream()))
+                try
                 {
                     var requestLine = await creader.ReadLineAsync();
                     var requestLineS = requestLine.Split(' ');
@@ -58,24 +60,44 @@ namespace Jambox.Web
                     /*Keep the parses in their own scope*/
                     {
                         header.Method = Enum.TryParse(requestLineS[0], out HttpRequestMethod httprqmethodparse) ? httprqmethodparse : throw new HttpRequestException($"Malformed HTTP header method {requestLineS[0]}");
-                        header.RequestURI = Uri.TryCreate(requestLineS[1], UriKind.RelativeOrAbsolute, out Uri uriparse) ? uriparse : throw new HttpRequestException($"Malformed HTTP header URI {requestLineS[1]}");
+                        header.RequestURI = requestLineS[1];
                     }
 
                     while (!string.IsNullOrWhiteSpace(requestLine))
                     {
                         requestLine = creader.ReadLine();
+                        if (string.IsNullOrEmpty(requestLine))
+                            break;
+                        var index = requestLine.IndexOf(':');
+                        var hname = requestLine.Substring(0, index);
+                        var data = requestLine.Remove(0, index + 1).TrimStart();
+                        header.GetType().GetRuntimeProperty(hname.Replace("-", ""))?.SetValue(header, data);
                     }
-                    (_, var action) = getRequestMap[0];
-                    action(new Request() { Header = header, responseStream = cwriter });
+                    Regex regex = null;
+                    Action<Request> action = null;
+                    switch (header.Method) {
+                    case HttpRequestMethod.GET:
+                    {
+                        (regex, action) = getRequestMap.First(x => x.Item1.IsMatch(header.RequestURI));
+                        break;
+                    }
+                    case HttpRequestMethod.POST:
+                    {
+                        (regex, action) = postRequestMap.First(x => x.Item1.IsMatch(header.RequestURI));
+                        break;
+                    }
+                    }
+                    if (action == null)
+                        throw new HttpRequestException("Could not find suitable URL to route");
+                    action(new Request() { Header = header, responseStream = cwriter, Captures = regex.Match(header.RequestURI).Captures });
+                    client.Dispose();
                 }
-                client.Dispose();
-            }
-            catch (Exception ex)
-            {
-                using (var cwriter = new StreamWriter(client.GetStream()))
+                catch (Exception ex)
+                {
                     cwriter.Write("An error has occured!");
-                client.Dispose();
-                errorHandler(ex);
+                    client.Dispose();
+                    errorHandler(ex);
+                }
             }
         }
     }

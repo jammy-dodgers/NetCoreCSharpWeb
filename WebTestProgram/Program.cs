@@ -9,13 +9,13 @@ namespace WebTestProgram
         static void Main(string[] args)
         {
             var server = Server.New(IPAddress.Any, 5000, caseInsensitive: true)
-                .GET(@"/(\d+)\/([^\/]+)", rq =>
+                .GET(@"/.+", rq =>
                 {
                     rq.Response.Append("Hello World!\n");
-                    rq.Response.Append($"{rq.Header.Method} - {rq.Header.RequestURI?.ToString() ?? "null uri"}");
+                    rq.Response.Append($"");
                     rq.Send();
                 }).Build();
-            server.Run((ex) => throw ex);
+            server.Run((ex) => Console.WriteLine(ex.Message));
         }
     }
 }

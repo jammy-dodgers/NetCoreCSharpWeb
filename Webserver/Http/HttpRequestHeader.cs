@@ -9,7 +9,7 @@ namespace Jambox.Web.Http
         public bool IsSimpleRequest { get; internal set; }
         /* Main request line stuff */
         public HttpRequestMethod Method { get; internal set; }
-        public Uri RequestURI { get; internal set; }
+        public string RequestURI { get; internal set; }
         public string HttpVersion { get; internal set; }
 
         /* Other  */
