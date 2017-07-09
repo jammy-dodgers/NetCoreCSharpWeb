@@ -38,6 +38,7 @@ namespace Jambox.Web
         public void Redirect(string URL)
         {
             ResponseHeader.Location = URL;
+            ResponseHeader.StatusCode = 302;
             responseStream.WriteLine($"{ResponseHeader.HttpVersion} {ResponseHeader.StatusCode} {ResponseHeader.ReasonPhrase}");
             responseStream.WriteLine($"Location: {ResponseHeader.Location}");
             responseStream.WriteLine();
