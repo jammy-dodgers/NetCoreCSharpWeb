@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Jambox.Web.Http
 {
-    enum HttpRequestMethod
+    public enum HttpRequestMethod
     {
         GET,
         HEAD,

@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Jambox.Web.Http
 {
-    class HttpRequestHeader
+    public class HttpRequestHeader
     {
         /* Main request line stuff */
         public HttpRequestMethod Method { get; private set; }
