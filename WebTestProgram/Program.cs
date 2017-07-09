@@ -7,7 +7,7 @@ namespace WebTestProgram
         static void Main(string[] args)
         {
             var server = Server.New(caseInsensitive: true)
-                .GET("/.+$", rq =>
+                .GET(@"(\d+)\/([^\/]+)", rq =>
                 {
 
                 })
