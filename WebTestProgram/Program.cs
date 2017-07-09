@@ -9,11 +9,11 @@ namespace WebTestProgram
         static void Main(string[] args)
         {
             var server = Server.New(caseInsensitive: true)
-                .GET(@"(\d+)\/([^\/]+)", rq =>
+                .GET(@"/(\d+)\/([^\/]+)", rq =>
                 {
 
                 })
-                .GET("", rq =>
+                .GET("/", rq =>
                 {
                 }).Build();
             server.Run(IPAddress.Any, 80);
