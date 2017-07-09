@@ -6,5 +6,20 @@ namespace Jambox.Web
 {
     public class Request
     {
+        public Request()
+        {
+            response = new StringBuilder();
+        }
+
+        private StringBuilder response;
+
+        public void ResponseAppend()
+        {
+
+        }
+        public void Send()
+        {
+
+        }
     }
 }
