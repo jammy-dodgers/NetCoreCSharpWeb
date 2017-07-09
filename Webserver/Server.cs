@@ -20,17 +20,17 @@ namespace Jambox.Web
         private RequestList postRequestMap;
         private RequestList putRequestMap;
         private RequestList deleteMapping;
-
+        private string MajorErrorString;
         private TcpListener tcp;
         private Server()
         {
         }
 
-        public static ServerBuilder New(IPAddress ip, int port, bool caseInsensitive = false)
+        public static ServerBuilder New(IPAddress ip, int port = 80, bool caseInsensitive = false, string majorErrorString = "An error has occured")
         {
-            return new ServerBuilder(ip, port, caseInsensitive ? RegexOptions.IgnoreCase : RegexOptions.None);
+            return new ServerBuilder(ip, port, caseInsensitive ? RegexOptions.IgnoreCase : RegexOptions.None, majorErrorString);
         }
-        public void Run(Action<Exception> errorHandler = null)
+        public void Run(Action<Exception, string> errorHandler = null)
         {
             tcp.Start();
             while (true)
@@ -42,8 +42,9 @@ namespace Jambox.Web
 #pragma warning restore CS4014
             }
         }
-        public async Task RunAsync(TcpClient client, Action<Exception> errorHandler)
+        public async Task RunAsync(TcpClient client, Action<Exception, string> errorHandler)
         {
+            string route = "";
             using (var creader = new StreamReader(client.GetStream()))
             using (var cwriter = new StreamWriter(client.GetStream()))
             {
@@ -62,7 +63,7 @@ namespace Jambox.Web
                         header.Method = Enum.TryParse(requestLineS[0], out HttpRequestMethod httprqmethodparse) ? httprqmethodparse : throw new HttpRequestException($"Malformed HTTP header method {requestLineS[0]}");
                         header.RequestURI = requestLineS[1];
                     }
-
+                    route = header.RequestURI;
                     while (!string.IsNullOrWhiteSpace(requestLine))
                     {
                         requestLine = creader.ReadLine();
@@ -92,8 +93,8 @@ namespace Jambox.Web
                     action(new Request() {
                         Header = header,
                         responseStream = cwriter,
-                        Captures = regex.Match(header.RequestURI).Captures,
-                        UserIP = ((IPEndPoint)client.Client.RemoteEndPoint).Address
+                        Groups = regex.Match(header.RequestURI).Groups,
+                        IP = ((IPEndPoint)client.Client.RemoteEndPoint).Address
                     });
                     cwriter.Flush();
                     client.GetStream().Dispose();
@@ -101,10 +102,10 @@ namespace Jambox.Web
                 }
                 catch (Exception ex)
                 {
-                    cwriter.Write("An error has occured!");
+                    cwriter.Write(MajorErrorString);
                     cwriter.Flush();
                     client.Dispose();
-                    errorHandler(ex);
+                    errorHandler(ex, route);
                 }
             }
         }

@@ -21,9 +21,10 @@ namespace Jambox.Web
             IPAddress ip;
             int port;
             RegexOptions caseSensitive;
-            public ServerBuilder(IPAddress _ip, int _port, RegexOptions caseSensitivity)
+            public ServerBuilder(IPAddress _ip, int _port, RegexOptions caseSensitivity, string majorErrorString)
             {
                 ws = new Server();
+                ws.MajorErrorString = majorErrorString;
                 ip = _ip;
                 port = _port;
                 getRq = System.Collections.Immutable.ImmutableList.CreateBuilder<(Regex, Action<Request>)>();

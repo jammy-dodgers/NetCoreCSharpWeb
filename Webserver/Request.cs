@@ -25,8 +25,8 @@ namespace Jambox.Web
         public Http.HttpResponseHeader ResponseHeader { get; set; }
 
         public Http.HttpRequestHeader Header { get; internal set; }
-        public IPAddress UserIP { get; internal set; }
-        public CaptureCollection Captures { get; internal set; }
+        public IPAddress IP { get; internal set; }
+        public GroupCollection Groups { get; internal set; }
         internal StreamWriter responseStream;
 
         public void Send()
