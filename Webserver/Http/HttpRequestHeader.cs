@@ -6,10 +6,11 @@ namespace Jambox.Web.Http
 {
     public class HttpRequestHeader
     {
+        public bool IsSimpleRequest { get; internal set; }
         /* Main request line stuff */
-        public HttpRequestMethod Method { get; private set; }
-        public Uri RequestURI { get; private set; }
-        public string HttpVersion { get; private set; }
+        public HttpRequestMethod Method { get; internal set; }
+        public Uri RequestURI { get; internal set; }
+        public string HttpVersion { get; internal set; }
 
         /* Other  */
         public string Accept { get; internal set; }
