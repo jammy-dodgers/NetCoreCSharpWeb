@@ -9,6 +9,7 @@ namespace WebTestProgram
         static void Main(string[] args)
         {
             var server = Server.New(ip: IPAddress.Any, port: 5000, caseInsensitive: true)
+                .GET(@"/GoToGoogle", rq => rq.Redirect("http://www.google.com/"))
                 .GET(@"/(.+)?", rq =>
                 {
                     Console.WriteLine($"GET from {rq.Header.UserAgent} at {rq.UserIP}");

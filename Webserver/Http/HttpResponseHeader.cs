@@ -6,10 +6,13 @@ namespace Jambox.Web.Http
 {
     public class HttpResponseHeader
     {
-        public string StatusLine { get; set; }
+        public string HttpVersion { get; set; }
         public int StatusCode { get; set; }
         private string _reasonPhrase;
         public string ReasonPhrase { get => _reasonPhrase;
             set => _reasonPhrase = "\"" + value.Replace("\r", "").Replace("\n", "").Replace("\"", "") + "\""; }
+
+        public string Location { get; set; }
+        public string LastModified { get; set; }
     }
 }
