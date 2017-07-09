@@ -5,6 +5,8 @@ using System.Text.RegularExpressions;
 using System.Collections.Immutable;
 
 using RequestDict = System.Collections.Immutable.ImmutableDictionary<System.Text.RegularExpressions.Regex, System.Action<Jambox.Web.Request>>;
+using System.Net;
+
 namespace Jambox.Web
 {
     public partial class Server
@@ -22,6 +24,11 @@ namespace Jambox.Web
         public static ServerBuilder New(bool caseInsensitive = false)
         {
             return new ServerBuilder(caseInsensitive ? RegexOptions.IgnoreCase : RegexOptions.None);
+        }
+
+        public void Run(IPAddress ip, int port)
+        {
+            Http.HttpListener listener = new Http.HttpListener(ip, port);
         }
     }
 }
