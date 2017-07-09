@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using System.Collections.Immutable;
 
-using RequestDict = System.Collections.Immutable.ImmutableDictionary<System.Text.RegularExpressions.Regex, System.Action<Jambox.Web.Request>>;
+using RequestDict = System.Collections.Immutable.ImmutableSortedDictionary<System.Text.RegularExpressions.Regex, System.Action<Jambox.Web.Request>>;
 using System.Net;
 
 namespace Jambox.Web

@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using System.Text;
 using System.Text.RegularExpressions;
 
-using RequestDict = System.Collections.Immutable.ImmutableDictionary<System.Text.RegularExpressions.Regex, System.Action<Jambox.Web.Request>>;
-using RequestDictBuilder = System.Collections.Immutable.ImmutableDictionary<System.Text.RegularExpressions.Regex, System.Action<Jambox.Web.Request>>.Builder;
+using RequestDict = System.Collections.Immutable.ImmutableSortedDictionary<System.Text.RegularExpressions.Regex, System.Action<Jambox.Web.Request>>;
+using RequestDictBuilder = System.Collections.Immutable.ImmutableSortedDictionary<System.Text.RegularExpressions.Regex, System.Action<Jambox.Web.Request>>.Builder;
 namespace Jambox.Web
 {
     public partial class Server
@@ -20,10 +20,10 @@ namespace Jambox.Web
             public ServerBuilder(RegexOptions caseSensitivity)
             {
                 ws = new Server();
-                getRq = System.Collections.Immutable.ImmutableDictionary.CreateBuilder<Regex, Action<Request>>();
-                putRq = System.Collections.Immutable.ImmutableDictionary.CreateBuilder<Regex, Action<Request>>();
-                postRq = System.Collections.Immutable.ImmutableDictionary.CreateBuilder<Regex, Action<Request>>();
-                delRq = System.Collections.Immutable.ImmutableDictionary.CreateBuilder<Regex, Action<Request>>();
+                getRq = System.Collections.Immutable.ImmutableSortedDictionary.CreateBuilder<Regex, Action<Request>>();
+                putRq = System.Collections.Immutable.ImmutableSortedDictionary.CreateBuilder<Regex, Action<Request>>();
+                postRq = System.Collections.Immutable.ImmutableSortedDictionary.CreateBuilder<Regex, Action<Request>>();
+                delRq = System.Collections.Immutable.ImmutableSortedDictionary.CreateBuilder<Regex, Action<Request>>();
                 RegexOptions caseSensitive = caseSensitivity;
             }
             public ServerBuilder GET(string pattern, Action<Request> action)
