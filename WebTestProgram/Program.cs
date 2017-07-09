@@ -1,5 +1,7 @@
 ﻿using System;
 using Jambox.Web;
+using System.Net;
+
 namespace WebTestProgram
 {
     class Program
@@ -14,6 +16,7 @@ namespace WebTestProgram
                 .GET("", rq =>
                 {
                 }).Build();
+            server.Run(IPAddress.Any, 80);
         }
     }
 }
