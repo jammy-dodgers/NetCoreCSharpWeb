@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Net.Sockets;
 using System.Text;
 
 namespace Jambox.Web
@@ -8,15 +9,13 @@ namespace Jambox.Web
     {
         public Request()
         {
-            response = new StringBuilder();
+            Response = new StringBuilder();
         }
 
-        private StringBuilder response;
+        public StringBuilder Response { get; private set; }
 
-        public void ResponseAppend()
-        {
+        private TcpClient respClient;
 
-        }
         public void Send()
         {
 
