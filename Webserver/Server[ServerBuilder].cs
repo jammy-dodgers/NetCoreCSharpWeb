@@ -28,7 +28,7 @@ namespace Jambox.Web
                 putRq = System.Collections.Immutable.ImmutableSortedDictionary.CreateBuilder<Regex, Action<Request>>();
                 postRq = System.Collections.Immutable.ImmutableSortedDictionary.CreateBuilder<Regex, Action<Request>>();
                 delRq = System.Collections.Immutable.ImmutableSortedDictionary.CreateBuilder<Regex, Action<Request>>();
-                RegexOptions caseSensitive = caseSensitivity;
+                caseSensitive = caseSensitivity;
             }
             public ServerBuilder GET(string pattern, Action<Request> action)
             {

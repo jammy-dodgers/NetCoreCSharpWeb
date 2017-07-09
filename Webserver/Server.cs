@@ -43,13 +43,24 @@ namespace Jambox.Web
         }
         public async Task RunAsync(TcpClient client, Action<Exception> errorHandler)
         {
-            using (var creader = new StreamReader(client.GetStream()))
-            using (var cwriter = new StreamWriter(client.GetStream()))
+            try
             {
-                var requestLine = await creader.ReadLineAsync();
-                var requestLineS = requestLine.Split(' ');
+                using (var creader = new StreamReader(client.GetStream()))
+                using (var cwriter = new StreamWriter(client.GetStream()))
+                {
+                    var requestLine = await creader.ReadLineAsync();
+                    var requestLineS = requestLine.Split(' ');
+                    if (requestLineS.Length < 3)
+                    {
+                        throw new HttpRequestException("Request is missing Method, URI or HTTP version.");
+                    }
+                }
+                client.Dispose();
             }
-            client.Dispose();
+            catch (Exception ex)
+            {
+                errorHandler(ex);
+            }
         }
     }
 }
