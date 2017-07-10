@@ -55,12 +55,15 @@ namespace Jambox.Web
                 try
                 {
                     var requestLine = await creader.ReadLineAsync();
-                    var requestLineS = requestLine.Split(' ');
+                    var requestLineS = requestLine?.Split(' ') ?? new string[0];
                     var header = new Http.HttpRequestHeader();
                     header.IsSimpleRequest = requestLineS.Length == 2;
 
                     if (requestLineS.Length < 2 || requestLineS.Length > 3)
+                    {
+                        await cwriter.WriteLineAsync("HTTP/1.1 400 Bad Request\r\n\r\n");
                         throw new HttpRequestException("Malformed HTTP header");
+                    }
 
                     /*Keep the parses in their own scope*/
                     {
@@ -91,9 +94,22 @@ namespace Jambox.Web
                         (regex, action) = postRouteMap.FirstOrDefault(x => x.Item1.IsMatch(header.RequestURI));
                         break;
                     }
+                    case HttpRequestMethod.PUT:
+                    {
+                        (regex, action) = putRouteMap.FirstOrDefault(x => x.Item1.IsMatch(header.RequestURI));
+                        break;
+                    }
+                    case HttpRequestMethod.DELETE:
+                    {
+                        (regex, action) = deleteRouteMap.FirstOrDefault(x => x.Item1.IsMatch(header.RequestURI));
+                        break;
+                    }
                     }
                     if (action == null)
+                    {
+                        await cwriter.WriteLineAsync("HTTP/1.1 404 Not Found\r\n\r\n");
                         throw new HttpRequestException("Could not find suitable URL to route");
+                    }
                     action(new Request() {
                         Header = header,
                         responseStream = cwriter,

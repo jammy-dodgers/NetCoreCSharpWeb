@@ -8,7 +8,7 @@ namespace WebTestProgram
     {
         static void Main(string[] args)
         {
-            var server = Server.New(ip: IPAddress.Any, port: 5000, caseInsensitive: true)
+            var server = Server.New(ip: IPAddress.Any, port: 27015, caseInsensitive: true)
                 .GET(@"/redirectTest", rq => rq.Redirect("http://www.google.com/"))
                 .GET(@"/(.+)?", rq =>
                 {
