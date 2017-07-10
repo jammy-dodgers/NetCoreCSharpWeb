@@ -9,7 +9,7 @@ using System.Reflection;
 using System.Linq;
 using Jambox.Web.Http;
 using RequestList = System.Collections.Immutable.ImmutableList<(System.Text.RegularExpressions.Regex, System.Action<Jambox.Web.Request>)>;
-
+using System.Collections.Generic;
 
 namespace Jambox.Web
 {
@@ -46,6 +46,54 @@ namespace Jambox.Web
 #pragma warning restore CS4014
             }
         }
+        private Dictionary<string,string> SetupQueryStrings(ref string url)
+        {
+            Dictionary<string, string> querystring = null;
+            /*Setup query strings*/
+            if (url.Contains("?"))
+            {
+                querystring = new Dictionary<string, string>();
+                var qry = url.Split('?');
+                url = qry[0];
+                if (qry[1].Contains("&"))
+                {
+                    var sepparams = qry[1].Split('&');
+                    foreach (var keyvalpair in sepparams)
+                    {
+                        string key;
+                        string value = null;
+                        if (keyvalpair.Contains('='))
+                        {
+                            var kvp = keyvalpair.Split('=');
+                            key = kvp[0];
+                            value = kvp[1];
+                        }
+                        else
+                        {
+                            key = keyvalpair;
+                        }
+                        querystring.Add(key, value);
+                    }
+                }
+                else
+                {
+                    string key;
+                    string value = null;
+                    if (qry[1].Contains('='))
+                    {
+                        var kvp = qry[1].Split('=');
+                        key = kvp[0];
+                        value = kvp[1];
+                    }
+                    else
+                    {
+                        key = qry[1];
+                    }
+                    querystring.Add(key, value);
+                }
+            }
+            return querystring;
+        }
         public async Task RunAsync(TcpClient client, Action<Exception, string> errorHandler)
         {
             string route = "";
@@ -65,9 +113,11 @@ namespace Jambox.Web
                         throw new HttpRequestException("Malformed HTTP header");
                     }
 
+                    var querystring = new Dictionary<string, string>();
                     /*Keep the parses in their own scope*/
                     {
                         header.Method = Enum.TryParse(requestLineS[0], out HttpRequestMethod httprqmethodparse) ? httprqmethodparse : throw new HttpRequestException($"Malformed HTTP header method {requestLineS[0]}");
+                        querystring = SetupQueryStrings(ref requestLineS[1]);
                         header.RequestURI = requestLineS[1];
                     }
                     route = header.RequestURI;
@@ -114,7 +164,8 @@ namespace Jambox.Web
                         Header = header,
                         responseStream = cwriter,
                         Groups = regex.Match(header.RequestURI).Groups,
-                        IP = ((IPEndPoint)client.Client.RemoteEndPoint).Address
+                        IP = ((IPEndPoint)client.Client.RemoteEndPoint).Address,
+                        QueryStrings = querystring
                     });
                     cwriter.Flush();
                     client.GetStream().Dispose();

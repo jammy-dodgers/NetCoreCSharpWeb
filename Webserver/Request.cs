@@ -23,7 +23,8 @@ namespace Jambox.Web
 
         public StringBuilder Response { get; internal set; }
         public Http.HttpResponseHeader ResponseHeader { get; set; }
-
+        public string Url { get; internal set; }
+        public Dictionary<string, string> QueryStrings { get; internal set; }
         public Http.HttpRequestHeader Header { get; internal set; }
         public IPAddress IP { get; internal set; }
         public GroupCollection Groups { get; internal set; }
