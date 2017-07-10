@@ -10,14 +10,18 @@ using System.Linq;
 using Jambox.Web.Http;
 using RequestList = System.Collections.Immutable.ImmutableList<(System.Text.RegularExpressions.Regex, System.Action<Jambox.Web.Request>)>;
 using System.Collections.Generic;
+using System.Text;
 
 namespace Jambox.Web
 {
+    /// <summary>
+    /// Web Server
+    /// </summary>
     public class Server
     {
         //Routes
-#pragma warning disable CS0649
-#pragma warning disable CS0169
+#pragma warning disable CS0649 //something about these not being assigned to
+#pragma warning disable CS0169 //despite the fact that they are in serverbuilder
         internal RequestList getRouteMap;
         internal RequestList postRouteMap;
         internal RequestList putRouteMap;
@@ -29,11 +33,22 @@ namespace Jambox.Web
         internal Server()
         {
         }
-
-        public static ServerBuilder New(IPAddress ip, int port = 80, bool caseInsensitive = false, string majorErrorString = "An error has occured")
+        /// <summary>
+        /// Begin constructing a new server
+        /// </summary>
+        /// <param name="ip">IP address. Typically, IPAddress.Any</param>
+        /// <param name="port">Port. Typically, 80</param>
+        /// <param name="caseInsensitive">Should the routes be case sensitive? (Can be overriden manually on a per-route basis when defining routes)</param>
+        /// <param name="majorErrorString">String to be sent to client when an internal server error occurs.</param>
+        /// <returns>ServerBuilder</returns>
+        public static ServerBuilder New(IPAddress ip, int port = 80, bool caseInsensitive = false, string majorErrorString = "Error 500 - Internal Server Error")
         {
             return new ServerBuilder(ip, port, caseInsensitive ? RegexOptions.IgnoreCase : RegexOptions.None, majorErrorString);
         }
+        /// <summary>
+        /// Run the server with an optional provided errorhandler
+        /// </summary>
+        /// <param name="errorHandler"></param>
         public void Run(Action<Exception, string> errorHandler = null)
         {
             tcp.Start();
@@ -42,10 +57,15 @@ namespace Jambox.Web
                 var task = tcp.AcceptTcpClientAsync();
                 var client = task.GetAwaiter().GetResult();
 #pragma warning disable CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
-                RunAsync(client, errorHandler);
+                ServeClient(client, errorHandler);
 #pragma warning restore CS4014
             }
         }
+        /// <summary>
+        /// Setup the query strings
+        /// </summary>
+        /// <param name="url">URL. If contains query strings, they will be removed.</param>
+        /// <returns>Dictionary mapping for querystrings</returns>
         private Dictionary<string,string> SetupQueryStrings(ref string url)
         {
             Dictionary<string, string> querystring = null;
@@ -94,7 +114,13 @@ namespace Jambox.Web
             }
             return querystring;
         }
-        public async Task RunAsync(TcpClient client, Action<Exception, string> errorHandler)
+        /// <summary>
+        /// Asynchronously serves a client
+        /// </summary>
+        /// <param name="client"></param>
+        /// <param name="errorHandler"></param>
+        /// <returns></returns>
+        private async Task ServeClient(TcpClient client, Action<Exception, string> errorHandler)
         {
             string route = "";
             using (var creader = new StreamReader(client.GetStream()))
@@ -114,11 +140,13 @@ namespace Jambox.Web
                     }
 
                     var querystring = new Dictionary<string, string>();
+                    string rawUri = requestLineS[1];
+                    string procUri = rawUri;
                     /*Keep the parses in their own scope*/
                     {
                         header.Method = Enum.TryParse(requestLineS[0], out HttpRequestMethod httprqmethodparse) ? httprqmethodparse : throw new HttpRequestException($"Malformed HTTP header method {requestLineS[0]}");
-                        querystring = SetupQueryStrings(ref requestLineS[1]);
-                        header.RequestURI = requestLineS[1];
+                        querystring = SetupQueryStrings(ref procUri);
+                        header.RequestURI = rawUri;
                     }
                     route = header.RequestURI;
                     while (!string.IsNullOrWhiteSpace(requestLine))
@@ -165,7 +193,16 @@ namespace Jambox.Web
                         responseStream = cwriter,
                         Groups = regex.Match(header.RequestURI).Groups,
                         IP = ((IPEndPoint)client.Client.RemoteEndPoint).Address,
-                        QueryStrings = querystring
+                        QueryStrings = querystring,
+                        Url = procUri,
+                        RawUrl = rawUri,
+                        Response = new StringBuilder(),
+                        ResponseHeader = new Http.HttpResponseHeader()
+                        {
+                            StatusCode = 200,
+                            ReasonPhrase = "OK",
+                            HttpVersion = "HTTP/1.1"
+                        }
                     });
                     cwriter.Flush();
                     client.GetStream().Dispose();
@@ -173,7 +210,7 @@ namespace Jambox.Web
                 }
                 catch (Exception ex)
                 {
-                    cwriter.Write(MajorErrorString);
+                    cwriter.Write("HTTP/1.1 500 Internal Server Error\r\n\r\n" + MajorErrorString);
                     cwriter.Flush();
                     client.Dispose();
                     errorHandler(ex, route);

@@ -4,15 +4,31 @@ using System.Text;
 
 namespace Jambox.Web.Http
 {
+    /// <summary>
+    /// HTTP request header
+    /// </summary>
     public class HttpRequestHeader
     {
+        /// <summary>
+        /// Is this a simple request? (Only method, URI and version)
+        /// </summary>
         public bool IsSimpleRequest { get; internal set; }
         /* Main request line stuff */
+        /// <summary>
+        /// Method
+        /// </summary>
         public HttpRequestMethod Method { get; internal set; }
+        /// <summary>
+        /// Requested URI
+        /// </summary>
         public string RequestURI { get; internal set; }
+        /// <summary>
+        /// HTTP version
+        /// </summary>
         public string HttpVersion { get; internal set; }
 
         /* Other  */
+#pragma warning disable CS1591 //Missing XML comment
         public string Accept { get; internal set; }
         public string AcceptCharset { get; internal set; }
         public string AcceptEncoding { get; internal set; }
@@ -32,8 +48,12 @@ namespace Jambox.Web.Http
         public string Referer { get; internal set; }
         public string TE { get; internal set; }
         public string UserAgent { get; internal set; }
+#pragma warning restore CS1591 //Missing XML comment
 
         /* Body */
+        /// <summary>
+        /// Request body
+        /// </summary>
         public string Body { get; internal set; }
     }
 }
