@@ -10,7 +10,7 @@ namespace WebTestProgram
         {
             var server = Server.New(ip: IPAddress.Any, port: 5000, caseInsensitive: true)
                 .GET(@"/redirectTest", rq => rq.Redirect("http://www.google.com/"))
-                .GET(@"(?:/[^/]+/([^/]+))?/?", rq =>
+                .GET(@"/(.+)?", rq =>
                 {
                     Console.WriteLine($"GET from {rq.Header.UserAgent} at {rq.IP}");
                     rq.Response.Append($"Hello {rq.IP} ({rq.Header.UserAgent})\n");
