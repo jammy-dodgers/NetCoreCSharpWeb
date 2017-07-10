@@ -10,7 +10,7 @@ namespace Jambox.Web.Http
         public int StatusCode { get; set; }
         private string _reasonPhrase;
         public string ReasonPhrase { get => _reasonPhrase;
-            set => _reasonPhrase = "\"" + value.Replace("\r", "").Replace("\n", "").Replace("\"", "") + "\""; }
+            set => _reasonPhrase = value.Replace("\r", "").Replace("\n", ""); }
 
         public string Location { get; set; }
         public string LastModified { get; set; }
