@@ -15,6 +15,7 @@ namespace WebTestProgram
                     Console.WriteLine($"GET from {rq.Header.UserAgent} at {rq.IP}");
                     rq.Response.Append($"Hello {rq.IP} ({rq.Header.UserAgent})\n");
                     rq.Response.Append($"You asked for {rq.Groups[1]}");
+                    rq.ResponseHeader.ReasonPhrase = "hello world!";
                     rq.Send();
                 }).Build();
             server.Run(HandleException);
