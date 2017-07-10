@@ -77,10 +77,10 @@ namespace Jambox.Web
         }
         public Server Build()
         {
-            ws.getRequestMap = getRq.ToImmutable();
-            ws.postRequestMap = postRq.ToImmutable();
-            ws.putRequestMap = putRq.ToImmutable();
-            ws.deleteMapping = delRq.ToImmutable();
+            ws.getRouteMap = getRq.ToImmutable();
+            ws.postRouteMap = postRq.ToImmutable();
+            ws.putRouteMap = putRq.ToImmutable();
+            ws.deleteRouteMap = delRq.ToImmutable();
             ws.tcp = new TcpListener(ip, port);
             return ws;
         }

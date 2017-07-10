@@ -16,12 +16,16 @@ namespace Jambox.Web
     public class Server
     {
         //Routes
-        private RequestList getRequestMap;
-        private RequestList postRequestMap;
-        private RequestList putRequestMap;
-        private RequestList deleteMapping;
+#pragma warning disable CS0649
+#pragma warning disable CS0169
+        internal RequestList getRouteMap;
+        internal RequestList postRouteMap;
+        internal RequestList putRouteMap;
+        internal RequestList deleteRouteMap;
         internal string MajorErrorString;
-        private TcpListener tcp;
+        internal TcpListener tcp;
+#pragma warning restore CS0649
+#pragma warning restore CS0169
         internal Server()
         {
         }
@@ -79,12 +83,12 @@ namespace Jambox.Web
                     switch (header.Method) {
                     case HttpRequestMethod.GET:
                     {
-                        (regex, action) = getRequestMap.FirstOrDefault(x => x.Item1.IsMatch(header.RequestURI));
+                        (regex, action) = getRouteMap.FirstOrDefault(x => x.Item1.IsMatch(header.RequestURI));
                         break;
                     }
                     case HttpRequestMethod.POST:
                     {
-                        (regex, action) = postRequestMap.FirstOrDefault(x => x.Item1.IsMatch(header.RequestURI));
+                        (regex, action) = postRouteMap.FirstOrDefault(x => x.Item1.IsMatch(header.RequestURI));
                         break;
                     }
                     }
