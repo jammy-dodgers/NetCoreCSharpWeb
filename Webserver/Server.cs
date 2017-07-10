@@ -13,16 +13,16 @@ using RequestList = System.Collections.Immutable.ImmutableList<(System.Text.Regu
 
 namespace Jambox.Web
 {
-    public partial class Server
+    public class Server
     {
         //Routes
         private RequestList getRequestMap;
         private RequestList postRequestMap;
         private RequestList putRequestMap;
         private RequestList deleteMapping;
-        private string MajorErrorString;
+        internal string MajorErrorString;
         private TcpListener tcp;
-        private Server()
+        internal Server()
         {
         }
 
