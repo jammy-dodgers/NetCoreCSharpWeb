@@ -213,7 +213,7 @@ namespace Jambox.Web
                     cwriter.Write("HTTP/1.1 500 Internal Server Error\r\n\r\n" + MajorErrorString);
                     cwriter.Flush();
                     client.Dispose();
-                    errorHandler(ex, route);
+                    errorHandler?.Invoke(ex, route);
                 }
             }
         }
