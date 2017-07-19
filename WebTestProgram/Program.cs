@@ -8,16 +8,7 @@ namespace WebTestProgram
     {
         static void Main(string[] args)
         {
-            var server = Server.New(ip: IPAddress.Any, port: 27015, caseInsensitive: true)
-                .GET(@"/file/([^/]+)", rq =>
-                {
-                    rq.Response.Append(System.IO.File.ReadAllText($"files/{rq.Groups[1]}"));
-                    if (rq.QueryStrings.Count > 0) foreach (var kvp in rq.QueryStrings)
-                    {
-                        rq.Response.AppendLine($"<br />{kvp.Key} = {kvp.Value ?? ""}");
-                    }
-                    rq.Send();
-                })
+            var server = Server.New(ip: IPAddress.Any, port: 80, caseInsensitive: true)
                 .GET(@"/(.+)?", rq =>
                 {
                     Console.WriteLine($"GET from {rq.Header.UserAgent} at {rq.IP}");

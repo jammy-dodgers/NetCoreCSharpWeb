@@ -26,10 +26,14 @@ namespace Jambox.Web
         internal RequestList postRouteMap;
         internal RequestList putRouteMap;
         internal RequestList deleteRouteMap;
+        internal RequestList headRouteMap;
+        internal RequestList patchRouteMap;
         internal string MajorErrorString;
         internal TcpListener tcp;
 #pragma warning restore CS0649
 #pragma warning restore CS0169
+        const string ServerProductName = "jammywebSV";
+
         internal Server()
         {
         }
@@ -136,16 +140,16 @@ namespace Jambox.Web
                     if (requestLineS.Length < 2 || requestLineS.Length > 3)
                     {
                         await cwriter.WriteLineAsync("HTTP/1.1 400 Bad Request\r\n\r\n");
-                        throw new HttpRequestException("Malformed HTTP header");
+                        return;
                     }
 
                     var querystring = new Dictionary<string, string>();
                     string rawUri = requestLineS[1];
-                    string procUri = rawUri;
+                    string processedUri = rawUri;
                     /*Keep the parses in their own scope*/
                     {
                         header.Method = Enum.TryParse(requestLineS[0], out HttpRequestMethod httprqmethodparse) ? httprqmethodparse : throw new HttpRequestException($"Malformed HTTP header method {requestLineS[0]}");
-                        querystring = SetupQueryStrings(ref procUri);
+                        querystring = SetupQueryStrings(ref processedUri);
                         header.RequestURI = rawUri;
                     }
                     route = header.RequestURI;
@@ -161,32 +165,39 @@ namespace Jambox.Web
                     }
                     Regex regex = null;
                     Action<Request> action = null;
-                    switch (header.Method) {
+                    switch (header.Method)
+                    {
                     case HttpRequestMethod.GET:
-                    {
-                        (regex, action) = getRouteMap.FirstOrDefault(x => x.Item1.IsMatch(header.RequestURI));
-                        break;
-                    }
+                        {
+                            (regex, action) = getRouteMap.FirstOrDefault(x => x.Item1.IsMatch(header.RequestURI));
+                            break;
+                        }
                     case HttpRequestMethod.POST:
-                    {
-                        (regex, action) = postRouteMap.FirstOrDefault(x => x.Item1.IsMatch(header.RequestURI));
-                        break;
-                    }
+                        {
+                            (regex, action) = postRouteMap.FirstOrDefault(x => x.Item1.IsMatch(header.RequestURI));
+                            break;
+                        }
                     case HttpRequestMethod.PUT:
-                    {
-                        (regex, action) = putRouteMap.FirstOrDefault(x => x.Item1.IsMatch(header.RequestURI));
-                        break;
-                    }
+                        {
+                            (regex, action) = putRouteMap.FirstOrDefault(x => x.Item1.IsMatch(header.RequestURI));
+                            break;
+                        }
                     case HttpRequestMethod.DELETE:
-                    {
-                        (regex, action) = deleteRouteMap.FirstOrDefault(x => x.Item1.IsMatch(header.RequestURI));
-                        break;
-                    }
+                        {
+                            (regex, action) = deleteRouteMap.FirstOrDefault(x => x.Item1.IsMatch(header.RequestURI));
+                            break;
+                        }
+                    case HttpRequestMethod.OPTIONS:
+                        {
+                            await HandleOptionRequest(cwriter, rawUri);
+                            await cwriter.FlushAsync();
+                            return;
+                        }
                     }
                     if (action == null)
                     {
                         await cwriter.WriteLineAsync("HTTP/1.1 404 Not Found\r\n\r\n");
-                        throw new HttpRequestException("Could not find suitable URL to route");
+                        return;
                     }
                     action(new Request() {
                         Header = header,
@@ -194,7 +205,7 @@ namespace Jambox.Web
                         Groups = regex.Match(header.RequestURI).Groups,
                         IP = ((IPEndPoint)client.Client.RemoteEndPoint).Address,
                         QueryStrings = querystring,
-                        Url = procUri,
+                        Url = processedUri,
                         RawUrl = rawUri,
                         Response = new StringBuilder(),
                         ResponseHeader = new Http.HttpResponseHeader()
@@ -204,8 +215,7 @@ namespace Jambox.Web
                             HttpVersion = "HTTP/1.1"
                         }
                     });
-                    cwriter.Flush();
-                    client.GetStream().Dispose();
+                    await cwriter.FlushAsync();
                     client.Dispose();
                 }
                 catch (Exception ex)
@@ -215,6 +225,26 @@ namespace Jambox.Web
                     client.Dispose();
                     errorHandler?.Invoke(ex, route);
                 }
+            }
+        }
+
+        private async Task HandleOptionRequest(StreamWriter responseStream, string resourceUri)
+        {
+            //if (resourceUri == "*")
+            {
+                string allowedMethods = string.Join(", ", new string[] {
+                    "OPTIONS",
+                    headRouteMap.IsEmpty ? null : "HEAD",
+                    postRouteMap.IsEmpty ? null : "POST",
+                    putRouteMap.IsEmpty ? null : "PUT",
+                    getRouteMap.IsEmpty ? null : "GET",
+                    patchRouteMap.IsEmpty ? null : "PATCH",
+                    deleteRouteMap.IsEmpty ? null : "DELETE"
+                }.Where(x => x != null));
+                await responseStream.WriteAsync($"HTTP/1.1 200 OK\r\n" +
+                    $"Allow: {allowedMethods}\r\n" +
+                    $"Server: {ServerProductName}\r\n" +
+                    $"Content-Length: 0\r\n\r\n");
             }
         }
     }

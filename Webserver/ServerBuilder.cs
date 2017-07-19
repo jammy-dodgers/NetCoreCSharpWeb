@@ -19,6 +19,8 @@ namespace Jambox.Web
         RequestListBuilder putRq;
         RequestListBuilder postRq;
         RequestListBuilder delRq;
+        RequestListBuilder headRq;
+        RequestListBuilder patchRq;
         IPAddress ip;
         int port;
         RegexOptions caseSensitive;
@@ -32,6 +34,8 @@ namespace Jambox.Web
             putRq = System.Collections.Immutable.ImmutableList.CreateBuilder<(Regex, Action<Request>)>();
             postRq = System.Collections.Immutable.ImmutableList.CreateBuilder<(Regex, Action<Request>)>();
             delRq = System.Collections.Immutable.ImmutableList.CreateBuilder<(Regex, Action<Request>)>();
+            headRq = System.Collections.Immutable.ImmutableList.CreateBuilder<(Regex, Action<Request>)>();
+            patchRq = System.Collections.Immutable.ImmutableList.CreateBuilder<(Regex, Action<Request>)>();
             caseSensitive = caseSensitivity;
         }
         /// <summary>
@@ -59,7 +63,7 @@ namespace Jambox.Web
             return this;
         }
         /// <summary>
-        /// Add a POST route to the server, with specified case-sensitivity.
+        /// Add a POST route to the server.
         /// </summary>
         /// <param name="pattern">Regex pattern for the route.</param>
         /// <param name="action">Action to perform for this route.</param>
@@ -83,7 +87,7 @@ namespace Jambox.Web
             return this;
         }
         /// <summary>
-        /// Add a PUT route to the server, with specified case-sensitivity.
+        /// Add a PUT route to the server.
         /// </summary>
         /// <param name="pattern">Regex pattern for the route.</param>
         /// <param name="action">Action to perform for this route.</param>
@@ -107,7 +111,7 @@ namespace Jambox.Web
             return this;
         }
         /// <summary>
-        /// Add a DELETE route to the server, with specified case-sensitivity.
+        /// Add a DELETE route to the server.
         /// </summary>
         /// <param name="pattern">Regex pattern for the route.</param>
         /// <param name="action">Action to perform for this route.</param>
@@ -131,6 +135,54 @@ namespace Jambox.Web
             return this;
         }
         /// <summary>
+        /// Add a PATCH route to the server.
+        /// </summary>
+        /// <param name="pattern">Regex pattern for the route.</param>
+        /// <param name="action">Action to perform for this route.</param>
+        /// <returns>self, for chained method calls.</returns>
+        public ServerBuilder PATCH(string pattern, Action<Request> action)
+        {
+            patchRq.Add((new Regex(pattern, RegexOptions.Compiled | caseSensitive), action));
+            return this;
+        }
+        /// <summary>
+        /// Add a PATCH route to the server, with specified case-sensitivity.
+        /// </summary>
+        /// <param name="pattern">Regex pattern for the route.</param>
+        /// <param name="action">Action to perform for this route.</param>
+        /// <param name="caseSensitive">Is this case sensitive?</param>
+        /// <returns>self, for chained method calls.</returns>
+        public ServerBuilder PATCH(string pattern, Action<Request> action, bool caseSensitive)
+        {
+            patchRq.Add((new Regex(pattern,
+                RegexOptions.Compiled | (caseSensitive ? RegexOptions.IgnoreCase : RegexOptions.None)), action));
+            return this;
+        }
+        /// <summary>
+        /// Add a HEAD route to the server.
+        /// </summary>
+        /// <param name="pattern">Regex pattern for the route.</param>
+        /// <param name="action">Action to perform for this route.</param>
+        /// <returns>self, for chained method calls.</returns>
+        public ServerBuilder HEAD(string pattern, Action<Request> action)
+        {
+            headRq.Add((new Regex(pattern, RegexOptions.Compiled | caseSensitive), action));
+            return this;
+        }
+        /// <summary>
+        /// Add a HEAD route to the server, with specified case-sensitivity.
+        /// </summary>
+        /// <param name="pattern">Regex pattern for the route.</param>
+        /// <param name="action">Action to perform for this route.</param>
+        /// <param name="caseSensitive">Is this case sensitive?</param>
+        /// <returns>self, for chained method calls.</returns>
+        public ServerBuilder HEAD(string pattern, Action<Request> action, bool caseSensitive)
+        {
+            headRq.Add((new Regex(pattern,
+                RegexOptions.Compiled | (caseSensitive ? RegexOptions.IgnoreCase : RegexOptions.None)), action));
+            return this;
+        }
+        /// <summary>
         /// Construct the server based on the current state of the ServerBuilder.
         /// </summary>
         /// <returns>A server.</returns>
@@ -140,6 +192,8 @@ namespace Jambox.Web
             ws.postRouteMap = postRq.ToImmutable();
             ws.putRouteMap = putRq.ToImmutable();
             ws.deleteRouteMap = delRq.ToImmutable();
+            ws.patchRouteMap = patchRq.ToImmutable();
+            ws.headRouteMap = headRq.ToImmutable();
             ws.tcp = new TcpListener(ip, port);
             return ws;
         }
