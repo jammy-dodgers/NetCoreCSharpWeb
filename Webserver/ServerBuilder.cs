@@ -6,7 +6,9 @@ using System.Text;
 using System.Text.RegularExpressions;
 
 using RequestList = System.Collections.Immutable.ImmutableList<(System.Text.RegularExpressions.Regex, System.Action<Jambox.Web.Request>)>;
+using RequestListHEAD = System.Collections.Immutable.ImmutableList<(System.Text.RegularExpressions.Regex, System.Func<Jambox.Web.Request, Jambox.Web.Http.HttpResponseHeader>)>;
 using RequestListBuilder = System.Collections.Immutable.ImmutableList<(System.Text.RegularExpressions.Regex, System.Action<Jambox.Web.Request>)>.Builder;
+using RequestListHEADBuilder = System.Collections.Immutable.ImmutableList<(System.Text.RegularExpressions.Regex, System.Func<Jambox.Web.Request, Jambox.Web.Http.HttpResponseHeader>)>.Builder;
 namespace Jambox.Web
 {
     /// <summary>
@@ -19,7 +21,7 @@ namespace Jambox.Web
         RequestListBuilder putRq;
         RequestListBuilder postRq;
         RequestListBuilder delRq;
-        RequestListBuilder headRq;
+        RequestListHEADBuilder headRq;
         RequestListBuilder patchRq;
         IPAddress ip;
         int port;
@@ -34,7 +36,7 @@ namespace Jambox.Web
             putRq = System.Collections.Immutable.ImmutableList.CreateBuilder<(Regex, Action<Request>)>();
             postRq = System.Collections.Immutable.ImmutableList.CreateBuilder<(Regex, Action<Request>)>();
             delRq = System.Collections.Immutable.ImmutableList.CreateBuilder<(Regex, Action<Request>)>();
-            headRq = System.Collections.Immutable.ImmutableList.CreateBuilder<(Regex, Action<Request>)>();
+            headRq = System.Collections.Immutable.ImmutableList.CreateBuilder<(Regex, Func<Request, Http.HttpResponseHeader>)>();
             patchRq = System.Collections.Immutable.ImmutableList.CreateBuilder<(Regex, Action<Request>)>();
             caseSensitive = caseSensitivity;
         }
@@ -164,7 +166,7 @@ namespace Jambox.Web
         /// <param name="pattern">Regex pattern for the route.</param>
         /// <param name="action">Action to perform for this route.</param>
         /// <returns>self, for chained method calls.</returns>
-        public ServerBuilder HEAD(string pattern, Action<Request> action)
+        public ServerBuilder HEAD(string pattern, Func<Request, Http.HttpResponseHeader> action)
         {
             headRq.Add((new Regex(pattern, RegexOptions.Compiled | caseSensitive), action));
             return this;
@@ -176,7 +178,7 @@ namespace Jambox.Web
         /// <param name="action">Action to perform for this route.</param>
         /// <param name="caseSensitive">Is this case sensitive?</param>
         /// <returns>self, for chained method calls.</returns>
-        public ServerBuilder HEAD(string pattern, Action<Request> action, bool caseSensitive)
+        public ServerBuilder HEAD(string pattern, Func<Request, Http.HttpResponseHeader> action, bool caseSensitive)
         {
             headRq.Add((new Regex(pattern,
                 RegexOptions.Compiled | (caseSensitive ? RegexOptions.IgnoreCase : RegexOptions.None)), action));

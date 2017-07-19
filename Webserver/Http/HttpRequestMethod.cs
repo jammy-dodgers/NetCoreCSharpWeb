@@ -22,6 +22,10 @@ namespace Jambox.Web.Http
         /// </summary>
         POST,
         /// <summary>
+        /// PATCH
+        /// </summary>
+        PATCH,
+        /// <summary>
         /// PUT
         /// </summary>
         PUT,

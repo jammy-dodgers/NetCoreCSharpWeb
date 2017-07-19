@@ -9,6 +9,7 @@ using System.Reflection;
 using System.Linq;
 using Jambox.Web.Http;
 using RequestList = System.Collections.Immutable.ImmutableList<(System.Text.RegularExpressions.Regex, System.Action<Jambox.Web.Request>)>;
+using RequestListHEAD = System.Collections.Immutable.ImmutableList<(System.Text.RegularExpressions.Regex, System.Func<Jambox.Web.Request, Jambox.Web.Http.HttpResponseHeader>)>;
 using System.Collections.Generic;
 using System.Text;
 
@@ -26,7 +27,7 @@ namespace Jambox.Web
         internal RequestList postRouteMap;
         internal RequestList putRouteMap;
         internal RequestList deleteRouteMap;
-        internal RequestList headRouteMap;
+        internal RequestListHEAD headRouteMap;
         internal RequestList patchRouteMap;
         internal string MajorErrorString;
         internal TcpListener tcp;
@@ -165,6 +166,7 @@ namespace Jambox.Web
                     }
                     Regex regex = null;
                     Action<Request> action = null;
+                    Func<Request, Http.HttpResponseHeader> headAction = null;
                     switch (header.Method)
                     {
                     case HttpRequestMethod.GET:
@@ -182,6 +184,11 @@ namespace Jambox.Web
                             (regex, action) = putRouteMap.FirstOrDefault(x => x.Item1.IsMatch(header.RequestURI));
                             break;
                         }
+                    case HttpRequestMethod.PATCH:
+                        {
+                            (regex, action) = patchRouteMap.FirstOrDefault(x => x.Item1.IsMatch(header.RequestURI));
+                            break;
+                        }
                     case HttpRequestMethod.DELETE:
                         {
                             (regex, action) = deleteRouteMap.FirstOrDefault(x => x.Item1.IsMatch(header.RequestURI));
@@ -193,13 +200,19 @@ namespace Jambox.Web
                             await cwriter.FlushAsync();
                             return;
                         }
+                    case HttpRequestMethod.HEAD:
+                        {
+                            (regex, headAction) = headRouteMap.FirstOrDefault(x => x.Item1.IsMatch(header.RequestURI));
+                            break;
+                        }
                     }
                     if (action == null)
                     {
                         await cwriter.WriteLineAsync("HTTP/1.1 404 Not Found\r\n\r\n");
                         return;
                     }
-                    action(new Request() {
+                    var request = new Request()
+                    {
                         Header = header,
                         responseStream = cwriter,
                         Groups = regex.Match(header.RequestURI).Groups,
@@ -214,7 +227,13 @@ namespace Jambox.Web
                             ReasonPhrase = "OK",
                             HttpVersion = "HTTP/1.1"
                         }
-                    });
+                    };
+
+                    if (header.Method == HttpRequestMethod.HEAD)
+                        headAction(request);
+                    else
+                        action(request);
+
                     await cwriter.FlushAsync();
                     client.Dispose();
                 }
