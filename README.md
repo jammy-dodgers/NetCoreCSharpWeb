@@ -1,4 +1,6 @@
-# SimpleCSharpWeb
+# NetCoreCSharpWeb
+Sometimes ASP.NET is a bit overkill for what you need.
+
 Heavy WIP. Currently probably does not adhere to standards.
 
 Inspired by sinatra (ruby) / jester (nim)
