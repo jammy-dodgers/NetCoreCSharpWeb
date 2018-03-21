@@ -9,7 +9,7 @@ Inspired by sinatra (ruby) / jester (nim)
 ```csharp
 var server = Server.New(ip: IPAddress.Any, port: 27015, caseInsensitive: true)
                 .GET(@"/file/([^/]+)", rq =>
-                {
+                { //bad example, probably vunerable to (Directory Traversal?) attack
                     rq.Response.Append(System.IO.File.ReadAllText($"files/{rq.Groups[1]}"));
                     if (rq.QueryStrings.Count > 0) foreach (var kvp in rq.QueryStrings)
                     {
