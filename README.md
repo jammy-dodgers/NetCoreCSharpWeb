@@ -1,5 +1,5 @@
 # NetCoreCSharpWeb
-Sometimes ASP.NET is a bit overkill for what you need.
+It's just a basic http server
 
 Heavy WIP. Currently probably does not adhere to standards.
 
